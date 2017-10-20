@@ -482,46 +482,46 @@ trait Implicits {
       // otherwise, the macro writer could check `c.openMacros` and `c.openImplicits` and do `c.abort` when expansions are deemed to be divergent
       // upon receiving `c.abort` the typechecker will decide that the corresponding implicit search has failed
       // which will fail the entire stack of implicit searches, producing a nice error message provided by the programmer
-      val existsDominatedImplicit: Boolean =
-        if(tree == EmptyTree) false
-        else {
-          @tailrec
-          def loop(ois: List[OpenImplicit], childByName: Boolean): Boolean = {
-            ois match {
-              case Nil => false
-              case (hd@OpenImplicit(info, tp, tree1)) :: tl =>
-                val byName = isByNameParamType(tp)
-                if(!byName && !childByName) {
-                  // Existing logic: neither this nor consequent open implicit are by name
-                  (!info.sym.isMacro && tree1.symbol == tree.symbol && !isByNameParamType(tp) && dominates(pt, tp)) || loop(tl, false)
-                } else {
-                  if(!info.sym.isMacro && tree1.symbol == tree.symbol) {
-                    val dtp = if(byName) dropByName(tp) else tp
-                    val dpt = dropByName(pt)
-                    if(byName)
-                      // If this open implicit is byname then,
-                      //   if equal we tie the knot
-                      //   if not equal then test for non-dominance here, but no need to continue
-                      //     since any loop would have to pass through here again and either
-                      //     tie the knot or dominate
-                      !(dtp =:= dpt) && dominates(dpt, dtp)
-                    else
-                      // childByName implies we are attempting to satisfy a byname argument of this
-                      // open implicit, in this case we will tie the knot or diverge at that level
-                      // so no need to proceed further.
-                      !childByName && (dominates(dpt, dtp) || loop(tl, byName))
-                  } else
-                    // childByName implies we are attempting to satisfy a byname argument of this
-                    // open implicit, in this case we will tie the knot or diverge at that level
-                    // so no need to proceed further.
-                    !childByName && loop(tl, byName)
-                }
-            }
-          }
-          loop(context.openImplicits, false)
-        }
+      // val existsDominatedImplicit: Boolean =
+      //   if(tree == EmptyTree) false
+      //   else {
+      //     @tailrec
+      //     def loop(ois: List[OpenImplicit], childByName: Boolean): Boolean = {
+      //       ois match {
+      //         case Nil => false
+      //         case (hd@OpenImplicit(info, tp, tree1)) :: tl =>
+      //           val byName = isByNameParamType(tp)
+      //           if(!byName && !childByName) {
+      //             // Existing logic: neither this nor consequent open implicit are by name
+      //             (!info.sym.isMacro && tree1.symbol == tree.symbol && !isByNameParamType(tp) && dominates(pt, tp)) || loop(tl, false)
+      //           } else {
+      //             if(!info.sym.isMacro && tree1.symbol == tree.symbol) {
+      //               val dtp = if(byName) dropByName(tp) else tp
+      //               val dpt = dropByName(pt)
+      //               if(byName)
+      //                 // If this open implicit is byname then,
+      //                 //   if equal we tie the knot
+      //                 //   if not equal then test for non-dominance here, but no need to continue
+      //                 //     since any loop would have to pass through here again and either
+      //                 //     tie the knot or dominate
+      //                 !(dtp =:= dpt) && dominates(dpt, dtp)
+      //               else
+      //                 // childByName implies we are attempting to satisfy a byname argument of this
+      //                 // open implicit, in this case we will tie the knot or diverge at that level
+      //                 // so no need to proceed further.
+      //                 !childByName && (dominates(dpt, dtp) || loop(tl, byName))
+      //             } else
+      //               // childByName implies we are attempting to satisfy a byname argument of this
+      //               // open implicit, in this case we will tie the knot or diverge at that level
+      //               // so no need to proceed further.
+      //               !childByName && loop(tl, byName)
+      //           }
+      //       }
+      //     }
+      //     loop(context.openImplicits, false)
+      //   }
 
-      if(existsDominatedImplicit) {
+      if(false) {
         //println("Pending implicit "+pending+" dominates "+pt+"/"+undetParams) //@MDEBUG
         DivergentSearchFailure
       } else {
